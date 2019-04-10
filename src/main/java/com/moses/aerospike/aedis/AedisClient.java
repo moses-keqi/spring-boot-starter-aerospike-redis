@@ -4,7 +4,7 @@
  * <p>
  * Version     Date         Author
  * -----------------------------------------
- * 1.0    2015年11月17日      HanKeQi
+ * 1.0    2019年04月08日      HanKeQi
  * <p>
  * Copyright (c) 2019, moses All Rights Reserved.
  */
@@ -19,6 +19,7 @@ package com.moses.aerospike.aedis;
 import com.aerospike.client.*;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.*;
+import com.moses.aerospike.properties.AedisProperties;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -56,29 +57,26 @@ public class AedisClient {
 
     }
 
-    public AedisClient(Collection<Host> hosts, String namespace, String set, String path) {
+    public AedisClient(Collection<Host> hosts, AedisProperties prop) {
         this();
         this.asClient = new AerospikeClient(null, hosts.toArray(new Host[hosts.size()]));
-        this.namespace = namespace;
-        this.redisSet = set;
-        checkUdfRegistration(path);
-    }
-
-    public AedisClient(Collection<Host> hosts, String namespace, String set, final int timeout, String path) {
-        this(hosts, namespace, set, path);
-        if (timeout > 0){
-            setTimeout(timeout);
+        this.namespace = prop.getNamespace();
+        this.redisSet = prop.getSet();
+        checkUdfRegistration(prop.getScriptPath());
+        if (prop.getTimeout() > 0){
+            setTimeout(prop.getTimeout());
         }
     }
 
-    public AedisClient(final String host, final int port, String namespace, String set, final int timeout, String path) {
+
+    public AedisClient(AedisProperties prop) {
         this();
-        this.asClient = new AerospikeClient(host, port);
+        this.asClient = new AerospikeClient(prop.getHost(), prop.getPort());
         this.namespace = namespace;
-        this.redisSet = set;
-        checkUdfRegistration(path);
-        if (timeout > 0){
-            setTimeout(timeout);
+        this.redisSet = prop.getSet();
+        checkUdfRegistration(prop.getScriptPath());
+        if (prop.getTimeout() > 0){
+            setTimeout(prop.getTimeout());
         }
     }
 

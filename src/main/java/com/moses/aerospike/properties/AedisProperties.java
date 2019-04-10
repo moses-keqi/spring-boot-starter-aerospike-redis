@@ -32,7 +32,7 @@ public class AedisProperties {
 
     private String set;
 
-    private String path;
+    private String scriptPath;
 
     public String getNamespace() {
         return namespace;
@@ -82,11 +82,11 @@ public class AedisProperties {
         this.set = set;
     }
 
-    public String getPath() {
-        return path;
+    public String getScriptPath() {
+        return scriptPath;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setScriptPath(String scriptPath) {
+        this.scriptPath = scriptPath;
     }
 }

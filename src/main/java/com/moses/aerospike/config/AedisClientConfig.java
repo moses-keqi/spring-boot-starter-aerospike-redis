@@ -4,7 +4,7 @@
  * <p>
  * Version     Date         Author
  * -----------------------------------------
- * 1.0    2015年11月17日      HanKeQi
+ * 1.0    2019年04月08日      HanKeQi
  * <p>
  * Copyright (c) 2019, moses All Rights Reserved.
  */
@@ -39,7 +39,7 @@ public class AedisClientConfig {
     public AedisClient aedisClient() throws Exception{
         if (StringUtils.isEmpty(properties.getHosts())) {
             try {
-                return new AedisClient(properties.getHost(), properties.getPort(), properties.getNamespace(), properties.getSet(), properties.getTimeout(), properties.getPath());
+                return new AedisClient(properties);
             } catch (Exception e) {
                 throw new Exception("Please check the configuration.");
             }
@@ -55,7 +55,7 @@ public class AedisClientConfig {
                 String[] colonDelimited = StringUtils.delimitedListToStringArray(str, ":");
                 list.add(new Host(colonDelimited[0], Integer.valueOf(colonDelimited[1]).intValue()));
             }
-            return new AedisClient(list,properties.getNamespace(), properties.getSet(), properties.getTimeout(), properties.getPath());
+            return new AedisClient(list, properties);
         }catch (Exception e){
             throw new Exception("Please check the configuration properties of the configuration cluster.");
         }
