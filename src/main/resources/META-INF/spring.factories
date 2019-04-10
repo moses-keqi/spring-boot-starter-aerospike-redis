@@ -1,0 +1,4 @@
+org.springframework.context.ApplicationListener=\
+com.moses.aerospike.AedisHolderListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.moses.aerospike.config.AedisClientConfig
