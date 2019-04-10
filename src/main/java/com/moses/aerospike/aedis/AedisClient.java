@@ -72,7 +72,7 @@ public class AedisClient {
     public AedisClient(AedisProperties prop) {
         this();
         this.asClient = new AerospikeClient(prop.getHost(), prop.getPort());
-        this.namespace = namespace;
+        this.namespace = prop.getNamespace();
         this.redisSet = prop.getSet();
         checkUdfRegistration(prop.getScriptPath());
         if (prop.getTimeout() > 0){
