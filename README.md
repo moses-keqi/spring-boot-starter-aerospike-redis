@@ -27,5 +27,5 @@ spring.aerospike.hosts=192.168.1.100:3000,192.168.1.102:3000,192.168.1.102:3000
 
 ## 引入lua
 ```properties
-spring.aerospike.path=/user/local/reids.lua #现有代码在resources下载，默认是不要引入，除非自己更好的解决方案
+spring.aerospike.scriptPath=/user/local/reids.lua #现有代码在resources下载，默认是不要引入，除非自己更好的解决方案
 ```
