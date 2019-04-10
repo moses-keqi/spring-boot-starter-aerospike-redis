@@ -8,7 +8,7 @@
   <dependency>
       <groupId>com.moses.aerospike</groupId>
       <artifactId>spring-boot-starter-aerospike-redis</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0.0</version>
   </dependency>
   ```
   
