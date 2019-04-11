@@ -689,12 +689,7 @@ public class AedisClient {
                 Value.get(field), Value.get(value));
     }
 
-    /*
-     *  eq *, front * and tail *, front *, tail *
-     * @param pattern
-     * @param keyString
-     * @param result
-     */
+    //eq *, front * and tail *, front *, tail *
     private void keysPattern(String pattern, String keyString, Set result){
         if (pattern.equals("*")){// eq *
             result.add(keyString);
