@@ -20,6 +20,7 @@ import com.aerospike.client.*;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.*;
 import com.moses.aerospike.properties.AedisProperties;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -239,28 +240,21 @@ public class AedisClient {
         return count;
     }
 
-
-
     public Set<String> keys(final String pattern) {
         final Set<String> result = new HashSet<String>();
         this.asClient.scanAll(this.scanPolicy, this.namespace, this.redisSet, (key, record) -> {
             String keyString = (String) record.bins.get(keyBin);
-            if (keyString.matches(pattern)){
-                result.add(keyString);
-            }
+            keysPattern(pattern, keyString, result);
         }, this.keyBin);
         return result;
     }
-
 
     public Set<byte[]> keys(byte[] binaryPattern) {
         final String pattern = binaryPattern.toString();
         final Set<byte[]> result = new HashSet<byte[]>();
         this.asClient.scanAll(this.scanPolicy, this.namespace, this.redisSet, (key, record) -> {
             String keyString = (String) record.bins.get(keyBin);
-            if (keyString.matches(pattern)){
-                result.add(keyString.getBytes());
-            }
+            keysPattern(pattern, keyString, result);
         }, this.keyBin);
         return result;
     }
@@ -289,14 +283,12 @@ public class AedisClient {
     }
 
 
-    public String rename(Object oldKey, Object newKey) {
+    public void rename(Object oldKey, Object newKey) {
         Key oldAsKey = new Key(this.namespace, this.redisSet, Value.get(oldKey));
         Record record = this.asClient.get(policy, oldAsKey);
         this.set(newKey, (String) record.getValue(this.redisBin));
         this.asClient.delete(this.writePolicy, oldAsKey);
-        return "OK";
     }
-
 
     public long expire(Object key, long expiration) {
         try {
@@ -316,11 +308,9 @@ public class AedisClient {
         }
     }
 
-
     public long pexpire(Object key, long expiration) {
         return expire(key, expiration / 1000);
     }
-
 
     public long expireAt(Object key, long unixTime) {
         try {
@@ -388,12 +378,9 @@ public class AedisClient {
         }
     }
 
-
-
     public long pttl(String key) {
         return ttl(key) * 1000;
     }
-
 
     public String ping() {
         if (this.asClient.isConnected())
@@ -402,11 +389,9 @@ public class AedisClient {
             return null;
     }
 
-
     public long incr(Object key) {
         return incrBy(key, 1);
     }
-
 
     public long incrBy(Object key, long increment) {
         Key asKey = new Key(this.namespace, this.redisSet, Value.get(key));
@@ -541,15 +526,11 @@ public class AedisClient {
      * @param key
      * @return
      */
-    public List<String> lpopList(String key) {
+    public List<String> lpopList(String key, Long count) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
-        List<String> result =  null;
-        try {
-            result = (List<String>) this.asClient.execute(this.writePolicy, asKey, "redis", "LPOP", Value.get(this.redisBin), Value.get(100000000l));
-            if (result.size() == 0)
-                return null;
-        }catch (Exception e){
-
+        List<String> result = (List<String>) this.asClient.execute(this.writePolicy, asKey, "redis", "LPOP", Value.get(this.redisBin), Value.get(count));
+        if (CollectionUtils.isEmpty(result)){
+            return null;
         }
         return result;
     }
@@ -559,7 +540,16 @@ public class AedisClient {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         List<String> result = (List<String>) this.asClient.execute(this.writePolicy, asKey, "redis", "RPOP", Value.get(this.redisBin), Value.get(1));
         if (result == null || result.size() == 0) return null;
-        return result.get(0);	}
+        return result.get(0);
+    }
+
+    public List<String> rpop(String key, Long count) {
+        Key asKey = new Key(this.namespace, this.redisSet, key);
+        List<String> result = (List<String>) this.asClient.execute(this.writePolicy, asKey, "redis", "RPOP", Value.get(this.redisBin), Value.get(count));
+        if (CollectionUtils.isEmpty(result))
+            return null;
+        return result;
+    }
 
 
     public String rpoplpush(String popKey, String pushKey) {
@@ -570,13 +560,11 @@ public class AedisClient {
         return poppedValue.get(0).toString();
     }
 
-
     public long lpushx(String key, String value) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         Object result = this.asClient.execute(this.writePolicy, asKey, "redis", "LPUSHX", Value.get(this.redisBin), Value.get(value));
         return ((Long)result).longValue();
     }
-
 
     public long rpushx(String key, String value) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
@@ -609,7 +597,6 @@ public class AedisClient {
                 Value.get(field));
     }
 
-
     public long hsetnx(String key, String field, String value) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         Object result = this.asClient.execute(this.writePolicy, asKey, "redis", "HSETNX", Value.get(this.redisBin),
@@ -617,15 +604,12 @@ public class AedisClient {
         return ((Long)result).longValue();
     }
 
-
     public String hmset(String key, Map<String, String> hash) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         return (String) this.asClient.execute(this.writePolicy, asKey, "redis", "HMSET", Value.get(this.redisBin),
                 Value.get(hash));
     }
 
-
-    @SuppressWarnings("unchecked")
     public List<String> hmget(String key, String ...fields) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         List<Object> objects = (List<Object>) this.asClient.execute(this.writePolicy, asKey, "redis", "HMGET", Value.get(this.redisBin),
@@ -634,14 +618,12 @@ public class AedisClient {
         return result;
     }
 
-
     public long hincrBy(String key, String field, long increment) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         Object result = this.asClient.execute(this.writePolicy, asKey, "redis", "HINCRBY", Value.get(this.redisBin),
                 Value.get(field), Value.get(increment));
         return ((Long) result).longValue();
     }
-
 
     public boolean hexists(String key, String field) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
@@ -658,30 +640,24 @@ public class AedisClient {
         return ((Long)result).longValue();
     }
 
-
     public Long hlen(String key) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         Object result =  this.asClient.execute(this.writePolicy, asKey, "redis", "HLEN", Value.get(this.redisBin));
         return ((Long)result).longValue();
     }
 
-
-    @SuppressWarnings("unchecked")
     public Set<String> hkeys(String key) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         List<String> result = (List<String>) this.asClient.execute(this.writePolicy, asKey, "redis", "HKEYS", Value.get(this.redisBin));
         return new HashSet<String>(result);
     }
 
-
-    @SuppressWarnings("unchecked")
     public List<String> hvals(String key) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         List<Object> objects = (List<Object>) this.asClient.execute(this.writePolicy, asKey, "redis", "HVALS", Value.get(this.redisBin));
         List<String> result = objects.stream().map(String::valueOf).collect(Collectors.toList());
         return result;
     }
-
 
     public Map<String, String> hgetAll(String key) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
@@ -707,11 +683,40 @@ public class AedisClient {
         return mapResult;
     }
 
-
     public Double hincrByFloat(String key, String field, double value) {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         return (Double) this.asClient.execute(this.writePolicy, asKey, "redis", "HINCRBY", Value.get(this.redisBin),
                 Value.get(field), Value.get(value));
+    }
+
+    /*
+     *  eq *, front * and tail *, front *, tail *
+     * @param pattern
+     * @param keyString
+     * @param result
+     */
+    private void keysPattern(String pattern, String keyString, Set result){
+        if (pattern.equals("*")){// eq *
+            result.add(keyString);
+        }else if(pattern.startsWith("*") && pattern.endsWith("*")){ //前* 尾*
+            String subPattern = pattern.substring(1);
+            subPattern = subPattern.substring(subPattern.length(), subPattern.length()-1);
+            if (keyString.contains(subPattern)){
+                result.add(keyString);
+            }
+        }else if (pattern.startsWith("*")){ //前*
+            String subPattern = pattern.substring(1);
+            if (keyString.endsWith(subPattern)){
+                result.add(keyString);
+            }
+        }else if (pattern.endsWith("*")){ //尾*
+            String subPattern = pattern.substring(pattern.length(), pattern.length()-1);
+            if (keyString.startsWith(subPattern)){
+                result.add(keyString);
+            }
+        }else if (keyString.matches(pattern)){//自定义
+            result.add(keyString);
+        }
     }
 
 }
