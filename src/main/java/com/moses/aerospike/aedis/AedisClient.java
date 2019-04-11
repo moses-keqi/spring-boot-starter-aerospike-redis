@@ -240,21 +240,67 @@ public class AedisClient {
         return count;
     }
 
+    /**
+     * eq *, front * and tail *, front *, tail *
+     * @param pattern
+     * @return
+     */
     public Set<String> keys(final String pattern) {
         final Set<String> result = new HashSet<String>();
         this.asClient.scanAll(this.scanPolicy, this.namespace, this.redisSet, (key, record) -> {
             String keyString = (String) record.bins.get(keyBin);
-            keysPattern(pattern, keyString, result);
+            if (pattern.equals("*")){// eq *
+                result.add(keyString);
+            }else if(pattern.startsWith("*") && pattern.endsWith("*")){ //前* 尾*
+                String subPattern = pattern.substring(1);
+                subPattern = subPattern.substring(subPattern.length(), subPattern.length()-1);
+                if (keyString.contains(subPattern)){
+                    result.add(keyString);
+                }
+            }else if (pattern.startsWith("*")){ //前*
+                String subPattern = pattern.substring(1);
+                if (keyString.endsWith(subPattern)){
+                    result.add(keyString);
+                }
+            }else if (pattern.endsWith("*")){ //尾*
+                String subPattern = pattern.substring(pattern.length(), pattern.length()-1);
+                if (keyString.startsWith(subPattern)){
+                    result.add(keyString);
+                }
+            }else if (keyString.matches(pattern)){//自定义
+                result.add(keyString);
+            }
         }, this.keyBin);
         return result;
     }
+
 
     public Set<byte[]> keys(byte[] binaryPattern) {
         final String pattern = binaryPattern.toString();
         final Set<byte[]> result = new HashSet<byte[]>();
         this.asClient.scanAll(this.scanPolicy, this.namespace, this.redisSet, (key, record) -> {
             String keyString = (String) record.bins.get(keyBin);
-            keysPattern(pattern, keyString, result);
+            if (pattern.equals("*")){// eq *
+                result.add(keyString.getBytes());
+            }else if(pattern.startsWith("*") && pattern.endsWith("*")){ //前* 尾*
+                String subPattern = pattern.substring(1);
+                subPattern = subPattern.substring(subPattern.length(), subPattern.length()-1);
+                if (keyString.contains(subPattern)){
+                    result.add(keyString.getBytes());
+                }
+            }else if (pattern.startsWith("*")){ //前*
+                String subPattern = pattern.substring(1);
+                if (keyString.endsWith(subPattern)){
+                    result.add(keyString.getBytes());
+                }
+            }else if (pattern.endsWith("*")){ //尾*
+                String subPattern = pattern.substring(pattern.length(), pattern.length()-1);
+                if (keyString.startsWith(subPattern)){
+                    result.add(keyString.getBytes());
+                }
+            }else if (keyString.matches(pattern)){//自定义
+                result.add(keyString.getBytes());
+            }
         }, this.keyBin);
         return result;
     }
@@ -687,31 +733,6 @@ public class AedisClient {
         Key asKey = new Key(this.namespace, this.redisSet, key);
         return (Double) this.asClient.execute(this.writePolicy, asKey, "redis", "HINCRBY", Value.get(this.redisBin),
                 Value.get(field), Value.get(value));
-    }
-
-    //eq *, front * and tail *, front *, tail *
-    private void keysPattern(String pattern, String keyString, Set result){
-        if (pattern.equals("*")){// eq *
-            result.add(keyString);
-        }else if(pattern.startsWith("*") && pattern.endsWith("*")){ //前* 尾*
-            String subPattern = pattern.substring(1);
-            subPattern = subPattern.substring(subPattern.length(), subPattern.length()-1);
-            if (keyString.contains(subPattern)){
-                result.add(keyString);
-            }
-        }else if (pattern.startsWith("*")){ //前*
-            String subPattern = pattern.substring(1);
-            if (keyString.endsWith(subPattern)){
-                result.add(keyString);
-            }
-        }else if (pattern.endsWith("*")){ //尾*
-            String subPattern = pattern.substring(pattern.length(), pattern.length()-1);
-            if (keyString.startsWith(subPattern)){
-                result.add(keyString);
-            }
-        }else if (keyString.matches(pattern)){//自定义
-            result.add(keyString);
-        }
     }
 
 }
