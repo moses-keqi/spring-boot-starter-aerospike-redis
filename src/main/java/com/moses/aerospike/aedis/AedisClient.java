@@ -253,7 +253,7 @@ public class AedisClient {
                 result.add(keyString);
             }else if(pattern.startsWith("*") && pattern.endsWith("*")){ //前* 尾*
                 String subPattern = pattern.substring(1);
-                subPattern = subPattern.substring(subPattern.length(), subPattern.length()-1);
+                subPattern = subPattern.substring(0, subPattern.length()-1);
                 if (keyString.contains(subPattern)){
                     result.add(keyString);
                 }
@@ -263,7 +263,7 @@ public class AedisClient {
                     result.add(keyString);
                 }
             }else if (pattern.endsWith("*")){ //尾*
-                String subPattern = pattern.substring(pattern.length(), pattern.length()-1);
+                String subPattern = pattern.substring(0, pattern.length()-1);
                 if (keyString.startsWith(subPattern)){
                     result.add(keyString);
                 }
@@ -284,7 +284,7 @@ public class AedisClient {
                 result.add(keyString.getBytes());
             }else if(pattern.startsWith("*") && pattern.endsWith("*")){ //前* 尾*
                 String subPattern = pattern.substring(1);
-                subPattern = subPattern.substring(subPattern.length(), subPattern.length()-1);
+                subPattern = subPattern.substring(0, subPattern.length()-1);
                 if (keyString.contains(subPattern)){
                     result.add(keyString.getBytes());
                 }
@@ -294,7 +294,7 @@ public class AedisClient {
                     result.add(keyString.getBytes());
                 }
             }else if (pattern.endsWith("*")){ //尾*
-                String subPattern = pattern.substring(pattern.length(), pattern.length()-1);
+                String subPattern = pattern.substring(0, pattern.length()-1);
                 if (keyString.startsWith(subPattern)){
                     result.add(keyString.getBytes());
                 }
@@ -735,4 +735,8 @@ public class AedisClient {
                 Value.get(field), Value.get(value));
     }
 
+
+    public static void main(String[] args) {
+        String a = "1000".substring(1);
+    }
 }
