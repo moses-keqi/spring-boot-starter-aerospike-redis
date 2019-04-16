@@ -33,3 +33,13 @@ spring.aerospike.scriptPath=/user/local/reids.lua #现有代码在resources下�
 ```json
 transaction-pending-limit 0
 ```
+## 具体配置：
+```properties
+namespace test {
+        replication-factor 2
+        memory-size 4G
+        default-ttl 30d # 30 days, use 0 to never expire/evict.
+        transaction-pending-limit 0
+        storage-engine memory
+}
+```
