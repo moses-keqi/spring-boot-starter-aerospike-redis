@@ -29,3 +29,7 @@ spring.aerospike.hosts=192.168.1.100:3000,192.168.1.102:3000,192.168.1.102:3000
 ```properties
 spring.aerospike.scriptPath=/user/local/reids.lua #现有代码在resources下载，默认是不要引入，除非自己更好的解决方案
 ```
+###### 遇见问题,transaction-pending-limit 配置来提高对同一个key操作的并发量，它的默认为20，值为0时表示不限增大该配置可能会降低一定性能。客户端可能需要对该异常增加重试处理，但重试可能会进一步增大HotKey的风险。 这种基础组件的更迭一定要尽可能使用线上流量做压力检验，从而尽早暴露潜在问题。
+```json
+transaction-pending-limit 0
+```
